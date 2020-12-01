@@ -19,23 +19,13 @@ engine = create_engine('sqlite:///test.db', echo = False)
 Base.metadata.create_all(bind=engine)
 
 
-def convert_to_db(file_path):
+def convert_to_db(file_path, table_name):
     if file_path:
         file_type = file_path.split('.')[-1]
         if file_type == "xlsx" or file_type == "xls":
             df = pd.read_excel(file_path, names=['number', 'fullname', 'address', 'additional_info'], header=None)
-            #print(df)
-            df.to_sql('wards', con=engine, if_exists='replace')
-            print(engine.execute("SELECT * FROM wards").fetchmany(10))
+            df.to_sql(table_name, con=engine, if_exists='replace')
+            print(engine.execute(f"SELECT * FROM {table_name}").fetchmany(10))
         else:
             print('not valid file type')
 
-
-
-input_file = input('enter file path: ')
-
-convert_to_db(input_file)
-
-ins = inspect(engine)
-for _t in ins.get_table_names():
-    print(_t)
