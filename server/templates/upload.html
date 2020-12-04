@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="starter-template">
+    <h1>Загрузите файл таблицы</h1>
+    <p class="lead">Файлдожен иметь расширение *.xlsx, *.xls и не иметь шапки таблицы</p>
+</div>
+<div class="container">
+    <form method="post" enctype="multipart/form-data">
+        <div class="row">
+            <div class="col">
+                <div class="form-group">
+                    <div class="custom-file">
+                        <input type="file" class="custom-file-input" id="inputGroupFile04">
+                        <label class="custom-file-label" for="inputGroupFile04">Выбрать файл</label>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-auto">
+                <button class="btn btn-primary mb-2" type="submit">Загрузить</button>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock content %}

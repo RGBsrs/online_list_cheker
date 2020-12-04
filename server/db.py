@@ -1,31 +1,25 @@
-from sqlalchemy import create_engine, inspect
+from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String
-import pandas as pd
+from sqlalchemy.orm import scoped_session, sessionmaker
 
+
+
+
+engine = create_engine('sqlite:///test.db', convert_unicode=True)
+db_session = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine))
 
 Base = declarative_base()
-
-class Ward(Base):
-    __tablename__='wards'
-    id = Column(Integer, primary_key=True)
-    number= Column(Integer)
-    fullname = Column(String)
-    address = Column(String)
-    additional_info = Column(String)
+Base.query = db_session.query_property()
 
 
 engine = create_engine('sqlite:///test.db', echo = False)
 Base.metadata.create_all(bind=engine)
 
 
-def convert_to_db(file_path, table_name):
-    if file_path:
-        file_type = file_path.split('.')[-1]
-        if file_type == "xlsx" or file_type == "xls":
-            df = pd.read_excel(file_path, names=['number', 'fullname', 'address', 'additional_info'], header=None)
-            df.to_sql(table_name, con=engine, if_exists='replace')
-            print(engine.execute(f"SELECT * FROM {table_name}").fetchmany(10))
-        else:
-            print('not valid file type')
+def init_db():
+    # import all modules here that might define models so that
+    # they will be registered properly on the metadata.  Otherwise
+    # you will have to import them first before calling init_db()
+    from .models import Ward
+    Base.metadata.create_all(bind=engine)
 
