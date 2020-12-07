@@ -46,12 +46,10 @@ def upload_file():
         # if user does not select file, browser also
         # submit an empty part without filename
         if file.filename == '':
-            flash('No selected file')
-            return redirect('/')
+            return redirect('/upload')
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            flash('file saved....')
             table = convert_to_db(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             t = Table(filename, os.path.join(app.config['UPLOAD_FOLDER'], filename))
             for record in table:
@@ -61,13 +59,13 @@ def upload_file():
             db.session.commit()
             db.session.close()
             
-            return redirect(url_for('uploaded_file'))
+            return redirect('/')
     return render_template('upload.html') 
 
 
-@app.route('/uploads')
-def uploaded_file():
-    wards = Ward.query.limit(10)
+@app.route('/uploads/<filename>')
+def uploaded_file(filename):
+    wards = Ward.query.filter(Ward.table_id == Table.query.filter_by(name = filename).first().id ).limit(10)
     return render_template('list.html', wards = wards)
 
 if __name__ == '__main__':

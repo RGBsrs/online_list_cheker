@@ -28,7 +28,6 @@ class Ward(db.Model):
     checked = db.Column(db.Boolean, default = False)
 
     table_id = db.Column(db.Integer, db.ForeignKey('table.id'), nullable=False)
-    #table = db.relationship('Table', backref='wards')
 
 
     def __init__(self, number = None, fullname = None, address = None, checked = False) -> None:

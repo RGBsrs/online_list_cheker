@@ -1,12 +1,17 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<ul class="list-group">
-    {% for table in tables %}
+<div class="starter-template">
+    <h1>Загруженные таблицы</h1>
+    <p class="lead">Чтоб открыть таблицу кликните на ее имя</p>
+</div>
 
-    <li class="list-group-item ">{{ table['name'] }} </li>
+<div class="list-group">
+    {% for table_name in table_names %}
+
+    <a href="/uploads/{{ table_name['name'] }}" class="list-group-item list-group-item-action"> {{ table_name['name'] }} </a>
 
 
     {%endfor%}
-</ul>
+</div>
 {% endblock content %}
