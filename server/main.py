@@ -1,5 +1,4 @@
 import os
-import re
 from flask import Flask, flash, request, redirect, url_for, render_template
 from werkzeug.utils import secure_filename
 from .converter import convert_to_db
@@ -7,6 +6,8 @@ from .converter import convert_to_db
 
 
 ALLOWED_EXTENSIONS = {'xlsx', 'xls'}
+ROWS_PER_PAGE = 20
+
 
 app = Flask(__name__)
 from .models import Ward, Table, db, init_db
@@ -65,8 +66,9 @@ def upload_file():
 
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
-    wards = Ward.query.filter(Ward.table_id == Table.query.filter_by(name = filename).first().id ).limit(10)
-    return render_template('list.html', wards = wards)
+    page = request.args.get('page', 1, type=int)
+    wards = Ward.query.filter(Ward.table_id == Table.query.filter_by(name = filename).first().id ).paginate(page=page, per_page=ROWS_PER_PAGE)
+    return render_template('list.html', wards = wards, filename = filename)
 
 if __name__ == '__main__':
     app.run(debug=True)
