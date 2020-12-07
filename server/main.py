@@ -1,16 +1,19 @@
 import os
+import re
 from flask import Flask, flash, request, redirect, url_for, render_template
-from flask_sqlalchemy import SQLAlchemy
 from werkzeug.utils import secure_filename
 from .converter import convert_to_db
+
+
 
 ALLOWED_EXTENSIONS = {'xlsx', 'xls'}
 
 app = Flask(__name__)
-BASEDIR = os.path.abspath(os.path.dirname(__file__))
-db = SQLAlchemy(app)
+from .models import Ward, Table, db, init_db
 
-app.config['UPLOAD_FOLDER'] ='uploads'
+
+BASEDIR = os.path.abspath(os.path.dirname(__file__))
+app.config['UPLOAD_FOLDER'] = os.path.join(BASEDIR,'uploads')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(BASEDIR, 'db.sqlite')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['TESTING'] = True
@@ -19,34 +22,17 @@ app.config['TESTING'] = True
 app.secret_key = "super secret key"
 
 
+init_db()
 
-class Ward(db.Model):
-    __tablename__='wards'
-    id = db.Column(db.Integer, primary_key=True)
-    number= db.Column(db.Integer)
-    fullname = db.Column(db.String(100))
-    address = db.Column(db.String(150))
-    checked = db.Column(db.Boolean, default = False)
-
-
-    def __init__(self, number = None, fullname = None, address = None, checked = False) -> None:
-        self.number = number
-        self.fullname = fullname
-        self.address = address
-        self.checked = checked
-    
-
-    def __repr__(self) -> str:
-        return f"{self.fullname} адрес: {self.address} отмечен: {self.checked}"
-
-db.create_all()
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/', methods=['GET'])
 def home():
-    return render_template('base.html')    
+    if request.method == 'GET':
+        table_names = Table.query.all()
+    return render_template('index.html', table_names = table_names)    
 
 @app.route('/upload', methods=['GET', 'POST'])
 def upload_file():
@@ -67,15 +53,22 @@ def upload_file():
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             flash('file saved....')
             table = convert_to_db(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            for table1 in table:
-                w = Ward(table1[0],table1[1],table1[2]) 
-                db.session.add(w)
+            t = Table(filename, os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            for record in table:
+                w = Ward(record[0],record[1],record[2]) 
+                t.wards.append(w)
+            db.session.add(t)    
             db.session.commit()
             db.session.close()
-            print('session closed....')
-            return redirect('/')
-    return render_template('upload.html')
+            
+            return redirect(url_for('uploaded_file'))
+    return render_template('upload.html') 
 
+
+@app.route('/uploads')
+def uploaded_file():
+    wards = Ward.query.limit(10)
+    return render_template('list.html', wards = wards)
 
 if __name__ == '__main__':
     app.run(debug=True)

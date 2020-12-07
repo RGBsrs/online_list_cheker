@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<ul class="list-group">
+    {% for ward in wards %}
+
+    <li class="list-group-item {% if ward['checked'] == True %}list-group-item-success{% endif %}">ПІБ:
+        {{ ward['fullname'] }} Адреса {{ ward['address'] }} </li>
+
+
+    {%endfor%}
+</ul>
+
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<ul class="list-group">
+    {% for table in tables %}
+
+    <li class="list-group-item ">{{ table['name'] }} </li>
+
+
+    {%endfor%}
+</ul>
+{% endblock content %}
