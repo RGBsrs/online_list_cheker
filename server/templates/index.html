@@ -9,8 +9,7 @@
 <div class="list-group">
     {% for table_name in table_names %}
 
-    <a href="/uploads/{{ table_name['name'] }}" class="list-group-item list-group-item-action"> {{ table_name['name'] }} </a>
-
+    <a href="{{ url_for('uploaded_file',id = table_name.id) }}" class="list-group-item list-group-item-action"> {{ table_name.name }} </a>
 
     {%endfor%}
 </div>

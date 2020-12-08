@@ -29,11 +29,13 @@ init_db()
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+
 @app.route('/', methods=['GET'])
 def home():
     if request.method == 'GET':
         table_names = Table.query.all()
     return render_template('index.html', table_names = table_names)    
+
 
 @app.route('/upload', methods=['GET', 'POST'])
 def upload_file():
@@ -52,7 +54,7 @@ def upload_file():
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             table = convert_to_db(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            t = Table(filename, os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            t = Table(name = filename, filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename))
             for record in table:
                 w = Ward(record[0],record[1],record[2]) 
                 t.wards.append(w)
@@ -64,11 +66,11 @@ def upload_file():
     return render_template('upload.html') 
 
 
-@app.route('/uploads/<filename>')
-def uploaded_file(filename):
+@app.route('/uploads/<id>', methods=['GET', 'POST'])
+def uploaded_file(id):
     page = request.args.get('page', 1, type=int)
-    wards = Ward.query.filter(Ward.table_id == Table.query.filter_by(name = filename).first().id ).paginate(page=page, per_page=ROWS_PER_PAGE)
-    return render_template('list.html', wards = wards, filename = filename)
+    wards = Ward.query.filter(Ward.table_id == Table.query.filter_by(id = id).first().id ).paginate(page=page, per_page=ROWS_PER_PAGE)
+    return render_template('list.html', wards = wards, id = id)
 
 if __name__ == '__main__':
     app.run(debug=True)
