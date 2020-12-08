@@ -70,7 +70,13 @@ def upload_file():
 def uploaded_file(id):
     page = request.args.get('page', 1, type=int)
     wards = Ward.query.filter(Ward.table_id == Table.query.filter_by(id = id).first().id ).paginate(page=page, per_page=ROWS_PER_PAGE)
-    return render_template('list.html', wards = wards, id = id)
+    if request.method == 'GET':
+        return render_template('list.html', wards = wards, id = id)
+    elif request.method == 'POST':
+        ward_id = request.form['index']
+        Ward.query.filter(Ward.id == ward_id).update(dict(checked=True))
+        db.session.commit()
+        return render_template('list.html', wards = wards, id = id)
 
 if __name__ == '__main__':
     app.run(debug=True)
