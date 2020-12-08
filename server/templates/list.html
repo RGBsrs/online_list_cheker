@@ -20,7 +20,7 @@
                     <td>
                     <form form method="POST">
                         <input type="hidden" name="index" value="{{ward.id}}">
-                        <input type="submit" class="btn btn-outline-danger btn-sm" value="Отметить">
+                        <input type="submit" class="btn btn-outline-danger btn-sm" value="Отметить" {% if ward.checked %} disabled {% endif %}>
                     </form>
                     </td>
                 </tr>
