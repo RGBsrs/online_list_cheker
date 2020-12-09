@@ -58,7 +58,7 @@ def upload_file():
 @app.route('/uploads/<id>', methods=['GET', 'POST'])
 def uploaded_file(id):
     page = request.args.get('page', 1, type=int)
-    wards = Ward.query.filter(Ward.table_id == Table.query.filter_by(id = id).first().id ).paginate(page=page, per_page=ROWS_PER_PAGE)
+    wards = Ward.query.filter(Ward.table_id == Table.query.filter_by(id = id).first().id).paginate(page=page, per_page=ROWS_PER_PAGE)
     if request.method == 'GET':
         return render_template('list.html', wards = wards, id = id)
     elif request.method == 'POST':
