@@ -1,8 +1,8 @@
 import os
 from flask import Flask, flash, request, redirect, url_for, render_template
 from werkzeug.utils import secure_filename
-from .converter import convert_to_db
-
+from .services import read_from_excel, allowed_file
+from .settings import DevelopmentConfig
 
 
 ALLOWED_EXTENSIONS = {'xlsx', 'xls'}
@@ -10,24 +10,13 @@ ROWS_PER_PAGE = 20
 
 
 app = Flask(__name__)
+app.config.from_object(DevelopmentConfig)
+upload_path = app.config['UPLOAD_FOLDER']
+
 from .models import Ward, Table, db, init_db
 
 
-BASEDIR = os.path.abspath(os.path.dirname(__file__))
-app.config['UPLOAD_FOLDER'] = os.path.join(BASEDIR,'uploads')
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(BASEDIR, 'db.sqlite')
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['TESTING'] = True
-
-
-app.secret_key = "super secret key"
-
-
 init_db()
-
-
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
 @app.route('/', methods=['GET'])
@@ -50,13 +39,13 @@ def upload_file():
         # submit an empty part without filename
         if file.filename == '':
             return redirect('/upload')
-        if file and allowed_file(file.filename):
+        if file and allowed_file(file.filename, ALLOWED_EXTENSIONS):
             filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            table = convert_to_db(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            t = Table(name = filename, filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            for record in table:
-                w = Ward(record[0],record[1],record[2]) 
+            file.save(os.path.join(upload_path, filename))
+            table_data = read_from_excel(os.path.join(upload_path, filename))
+            t = Table(name = filename, filepath = os.path.join(upload_path, filename))
+            for record in table_data:
+                w = Ward(record[0], record[1],record[2]) 
                 t.wards.append(w)
             db.session.add(t)    
             db.session.commit()
@@ -78,5 +67,3 @@ def uploaded_file(id):
         db.session.commit()
         return render_template('list.html', wards = wards, id = id)
 
-if __name__ == '__main__':
-    app.run(debug=True)
