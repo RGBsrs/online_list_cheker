@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
-from flask import Flask, flash, request, redirect, url_for, render_template
+from flask import Flask, flash, request, redirect, url_for, render_template, render_template_string
+from flask.templating import render_template_string
 from werkzeug.utils import secure_filename
 from .services import read_from_excel, allowed_file
 from .settings import DevelopmentConfig
@@ -20,11 +21,15 @@ from .models import Ward, Table, db, init_db
 init_db()
 
 
-@app.route('/', methods=['GET'])
+@app.route('/', methods=['GET','POST'])
 def home():
     if request.method == 'GET':
         table_names = Table.query.all()
-    return render_template('index.html', table_names = table_names)    
+        return render_template('index.html', table_names = table_names)    
+    if request.method == 'POST':
+        table_id = request.form['index']
+        return redirect(url_for('delete_table', id = table_id))
+    return render_template('upload.html')
 
 
 @app.route('/upload', methods=['GET', 'POST'])
@@ -69,3 +74,11 @@ def uploaded_file(id):
         return redirect(request.url)   
     return render_template('list.html', wards = wards, id = id)
 
+@app.route('/delete/<id>', methods=['POST', 'GET'])
+def delete_table(id):
+    if request.method == 'GET':
+        Table.query.filter(Table.id == id).delete()
+        Ward.query.filter(Ward.table_id == id).delete()
+        db.session.commit()
+        return redirect('/')
+    return redirect('/')

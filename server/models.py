@@ -1,4 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import backref
 from .main import app
 
 db = SQLAlchemy(app)
@@ -9,7 +10,7 @@ class Table(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     filepath = db.Column(db.String(100), nullable=False)
-    wards = db.relationship('Ward', lazy= "dynamic", primaryjoin = "Table.id == Ward.table_id")
+    wards = db.relationship('Ward', lazy= "dynamic", primaryjoin = "Table.id == Ward.table_id", cascade="all, delete")
 
     def __init__(self, name = None, filepath = None) -> None:
         self.name = name
@@ -27,7 +28,8 @@ class Ward(db.Model):
     address = db.Column(db.String(150))
     checked = db.Column(db.Boolean, default = False)
 
-    table_id = db.Column(db.Integer, db.ForeignKey('table.id'), nullable=False)
+    table_id = db.Column(db.Integer, db.ForeignKey('table.id', ondelete ='CASCADE'), nullable=False)
+    table = db.relationship('Table', back_populates = 'wards' )
 
 
     def __init__(self, number = None, fullname = None, address = None, checked = False) -> None:

@@ -1,5 +1,7 @@
 {% extends 'base.html' %}
+
 {% block title %}Главная {% endblock %}
+
 {% block content %}
 <div class="starter-template">
     <h1>Загруженные таблицы</h1>
@@ -8,9 +10,15 @@
 
 <div class="list-group">
     {% for table_name in table_names %}
-
-    <a href="{{ url_for('uploaded_file',id = table_name.id) }}" class="list-group-item list-group-item-action"> {{ table_name.name }} </a>
-
+    <div class="row align-items-center">
+        <div class="col"><a href="{{ url_for('uploaded_file',id = table_name.id) }}" class="list-group-item list-group-item-action mb-2"> {{ table_name.name }} </a></div>
+        <div class="col-md-auto">
+            <form form method="POST">
+                <input type="hidden" name="index" value="{{table_name.id}}">
+                <input type="submit" class="btn btn-outline-danger" value="Удалить">
+            </form>
+        </div>
+    </div>
     {%endfor%}
 </div>
 {% endblock content %}
