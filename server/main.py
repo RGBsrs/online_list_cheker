@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import os
 from flask import Flask, flash, request, redirect, url_for, render_template
 from werkzeug.utils import secure_filename
@@ -65,5 +66,6 @@ def uploaded_file(id):
         ward_id = request.form['index']
         Ward.query.filter(Ward.id == ward_id).update(dict(checked=True))
         db.session.commit()
-        return render_template('list.html', wards = wards, id = id)
+        return redirect(request.url)   
+    return render_template('list.html', wards = wards, id = id)
 
