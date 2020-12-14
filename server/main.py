@@ -21,6 +21,7 @@ from .models import Ward, Table, db, init_db
 init_db()
 
 
+
 @app.route('/', methods=['GET','POST'])
 def home():
     if request.method == 'GET':
@@ -51,7 +52,12 @@ def upload_file():
             filename = uuid.uuid4().hex +'.'+ secure_filename(file.filename).split('.')[-1]
             file.save(os.path.join(upload_path, filename))
             table_data = read_from_excel(os.path.join(upload_path, filename))
-            t = Table(name = filename, filepath = os.path.join(upload_path, filename))
+            if request.form['description']:
+                description = request.form['description']
+            else:
+                description = 'default description'
+            
+            t = Table(name = filename, filepath = os.path.join(upload_path, filename), description = description)
             for record in table_data:
                 w = Ward(record[0], record[1],record[2]) 
                 t.wards.append(w)
@@ -84,3 +90,9 @@ def delete_table(id):
         db.session.commit()
         return redirect('/')
     return redirect('/')
+
+
+
+@app.template_filter("clean_date")
+def clean_date(dt):
+    return dt.strftime("%d.%m, в %H:%M")

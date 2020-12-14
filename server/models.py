@@ -1,5 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import backref
+from datetime import datetime
 from .main import app
 
 db = SQLAlchemy(app)
@@ -11,12 +12,14 @@ class Table(db.Model):
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.String(100), nullable=False)
     filepath = db.Column(db.String(100), nullable=False)
+    date_created = db.Column(db.DateTime,nullable=False)
     wards = db.relationship('Ward', lazy= "dynamic", primaryjoin = "Table.id == Ward.table_id", cascade="all, delete")
 
     def __init__(self, name = None, description= 'default', filepath = None) -> None:
         self.name = name
         self.description = description
         self.filepath = filepath
+        self.date_created = datetime.utcnow()
 
     def __repr__(self) -> str:
         return f"Таблиця: {self.name}"
