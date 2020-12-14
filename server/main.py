@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import os
 from flask import Flask, flash, request, redirect, url_for, render_template, render_template_string
-from flask.templating import render_template_string
 from werkzeug.utils import secure_filename
+import uuid
 from .services import read_from_excel, allowed_file
 from .settings import DevelopmentConfig
 
@@ -35,18 +35,20 @@ def home():
 @app.route('/upload', methods=['GET', 'POST'])
 def upload_file():
     if request.method == 'POST':
-        flash('file ....')
-        # check if the post request has the file part
         if 'file' not in request.files:
-            flash('No file part')
+            flash('Файл не найден', "warning")
             return redirect(request.url)
         file = request.files['file']
+
         # if user does not select file, browser also
         # submit an empty part without filename
+
         if file.filename == '':
-            return redirect('/upload')
+            flash('Файл не выбран', "warning")
+            return redirect(request.url)
+
         if file and allowed_file(file.filename, ALLOWED_EXTENSIONS):
-            filename = secure_filename(file.filename)
+            filename = uuid.uuid4().hex +'.'+ secure_filename(file.filename).split('.')[-1]
             file.save(os.path.join(upload_path, filename))
             table_data = read_from_excel(os.path.join(upload_path, filename))
             t = Table(name = filename, filepath = os.path.join(upload_path, filename))
