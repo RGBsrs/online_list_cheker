@@ -1,6 +1,6 @@
-# -*- coding: utf-8 -*-
 import os
-from flask import Flask, flash, request, redirect, url_for, render_template, render_template_string
+from datetime import  datetime 
+from flask import Flask, flash, request, redirect, url_for, render_template
 from werkzeug.utils import secure_filename
 import uuid
 from .services import read_from_excel, allowed_file
@@ -15,17 +15,20 @@ app = Flask(__name__)
 app.config.from_object(DevelopmentConfig)
 upload_path = app.config['UPLOAD_FOLDER']
 
-from .models import Ward, Table, db, init_db
 
+from .models import Ward, Table, db
 
-init_db()
-
+@app.cli.command("init_db")
+def init_db():
+    db.drop_all()
+    db.create_all()
+    print("DB created")
 
 
 @app.route('/', methods=['GET','POST'])
 def home():
     if request.method == 'GET':
-        table_names = Table.query.all()
+        table_names = db.session.query(Table).all()
         return render_template('index.html', table_names = table_names)    
     if request.method == 'POST':
         table_id = request.form['index']
@@ -64,23 +67,35 @@ def upload_file():
             db.session.add(t)    
             db.session.commit()
             db.session.close()
-            
-            return redirect('/')
+            return redirect(url_for('home'))
     return render_template('upload.html') 
 
 
 @app.route('/uploads/<id>', methods=['GET', 'POST'])
 def uploaded_file(id):
     page = request.args.get('page', 1, type=int)
-    wards = Ward.query.filter(Ward.table_id == Table.query.filter_by(id = id).first().id).paginate(page=page, per_page=ROWS_PER_PAGE)
+    wards = Ward.query.filter(Ward.table_id == id).paginate(page=page, per_page=ROWS_PER_PAGE)
     if request.method == 'GET':
         return render_template('list.html', wards = wards, id = id)
-    elif request.method == 'POST':
-        ward_id = request.form['index']
-        Ward.query.filter(Ward.id == ward_id).update(dict(checked=True))
+    if request.method == 'POST':
+            q_string = request.form['query-string']
+            q_string = q_string.upper()
+            queried_wards = Ward.query.filter(Ward.table_id == id).filter(Ward.fullname.like(f'%{q_string}%')).order_by(Ward.id).paginate(page=page, per_page=ROWS_PER_PAGE)
+            print(queried_wards.pages)
+            return render_template('list.html', wards = queried_wards, id = id)
+    return redirect(request.url)  
+
+
+@app.route('/check/<id>/<page>', methods=['GET', 'POST'])
+def check_record(id, page):
+    if request.method == 'POST':
+        table_id = request.form['index']
+        Ward.query.filter(Ward.id == id).update(dict(checked=True, ckecked_date = datetime.now()))
         db.session.commit()
-        return redirect(request.url)   
-    return render_template('list.html', wards = wards, id = id)
+        if page == '':
+            page = 1
+        return redirect(url_for('uploaded_file', id = table_id, page = page))
+    return redirect(url_for('home')) 
 
 @app.route('/delete/<id>', methods=['POST', 'GET'])
 def delete_table(id):
@@ -88,8 +103,8 @@ def delete_table(id):
         Table.query.filter(Table.id == id).delete()
         Ward.query.filter(Ward.table_id == id).delete()
         db.session.commit()
-        return redirect('/')
-    return redirect('/')
+        return redirect(url_for('home'))
+    return redirect(url_for('home'))
 
 
 
