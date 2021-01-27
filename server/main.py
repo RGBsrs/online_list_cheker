@@ -1,6 +1,7 @@
 import os
 from datetime import  datetime 
 from flask import Flask, flash, request, redirect, url_for, render_template
+import logging
 from werkzeug.utils import secure_filename
 import uuid
 from .services import read_from_excel, allowed_file
@@ -18,6 +19,8 @@ upload_path = app.config['UPLOAD_FOLDER']
 
 from .models import Ward, Table, db
 
+db.init_app(app)
+
 @app.cli.command("init_db")
 def init_db():
     db.drop_all()
@@ -25,14 +28,39 @@ def init_db():
     print("DB created")
 
 
-@app.route('/', methods=['GET','POST'])
-def home():
-    if request.method == 'GET':
+def setup_logger():
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.DEBUG)
+
+    formatter = logging.Formatter(
+        '%(asctime)s:%(name)s:%(levelname)s:%(message)s')
+    file_handler = logging.FileHandler('site.log')
+    file_handler.setFormatter(formatter)
+    logger.addHandler(file_handler)
+
+    return logger
+
+
+logger = setup_logger()
+
+
+@app.route('/', methods=['GET'])
+def show_tables():
+    try:
         table_names = db.session.query(Table).all()
-        return render_template('index.html', table_names = table_names)    
-    if request.method == 'POST':
+        return render_template('index.html', table_names = table_names)
+    except Exception as e:
+        logger.warning(f'Error when quering all tables: {e}')
+    return render_template('upload.html')
+
+
+@app.route('/', methods=['POST'])
+def change_tables():  
+    try:
         table_id = request.form['index']
         return redirect(url_for('delete_table', id = table_id))
+    except Exception as e:
+        logger.warning(f'Error when deliting table: {e}')
     return render_template('upload.html')
 
 
@@ -74,13 +102,13 @@ def upload_file():
 @app.route('/uploads/<id>', methods=['GET', 'POST'])
 def uploaded_file(id):
     page = request.args.get('page', 1, type=int)
-    wards = Ward.query.filter(Ward.table_id == id).paginate(page=page, per_page=ROWS_PER_PAGE)
+    wards = Ward.get_by_table_id(id).paginate(page=page, per_page=ROWS_PER_PAGE)
     if request.method == 'GET':
         return render_template('list.html', wards = wards, id = id)
     if request.method == 'POST':
             q_string = request.form['query-string']
             q_string = q_string.upper()
-            queried_wards = Ward.query.filter(Ward.table_id == id).filter(Ward.fullname.like(f'%{q_string}%')).order_by(Ward.id).paginate(page=page, per_page=ROWS_PER_PAGE)
+            queried_wards = Ward.seek_in_fullname(id,q_string).paginate(page=page, per_page=ROWS_PER_PAGE)
             print(queried_wards.pages)
             return render_template('list.html', wards = queried_wards, id = id)
     return redirect(request.url)  
@@ -105,6 +133,11 @@ def delete_table(id):
         db.session.commit()
         return redirect(url_for('home'))
     return redirect(url_for('home'))
+
+
+@app.teardown_appcontext
+def shutdown_session(exception=None):
+    db.session.remove()
 
 
 

@@ -50,3 +50,15 @@ class Ward(db.Model):
 
     def __repr__(self) -> str:
         return f"{self.fullname} адрес: {self.address} отмечен: {self.checked}"
+    
+    @classmethod
+    def seek_in_fullname(cls, id: int, query_string: str):
+        q_set = cls.query.filter(cls.table_id == id).filter(cls.fullname.like(f'%{ query_string }%')).order_by(cls.id)
+        return q_set
+
+    @classmethod
+    def get_by_table_id(cls, id: int):
+        q_set = cls.query.filter(cls.table_id == id)
+        return q_set
+
+    
