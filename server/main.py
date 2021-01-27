@@ -95,7 +95,7 @@ def upload_file():
             db.session.add(t)    
             db.session.commit()
             db.session.close()
-            return redirect(url_for('home'))
+            return redirect(url_for('show_tables'))
     return render_template('upload.html') 
 
 
@@ -109,7 +109,6 @@ def uploaded_file(id):
             q_string = request.form['query-string']
             q_string = q_string.upper()
             queried_wards = Ward.seek_in_fullname(id,q_string).paginate(page=page, per_page=ROWS_PER_PAGE)
-            print(queried_wards.pages)
             return render_template('list.html', wards = queried_wards, id = id)
     return redirect(request.url)  
 
@@ -123,7 +122,7 @@ def check_record(id, page):
         if page == '':
             page = 1
         return redirect(url_for('uploaded_file', id = table_id, page = page))
-    return redirect(url_for('home')) 
+    return redirect(url_for('show_tables')) 
 
 @app.route('/delete/<id>', methods=['POST', 'GET'])
 def delete_table(id):
@@ -138,7 +137,6 @@ def delete_table(id):
 @app.teardown_appcontext
 def shutdown_session(exception=None):
     db.session.remove()
-
 
 
 @app.template_filter("clean_date")
