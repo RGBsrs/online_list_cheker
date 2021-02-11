@@ -21,6 +21,7 @@ def create_app():
     @app.teardown_appcontext
     def shutdown_session(exception=None):
         db.session.remove()
+    
     @app.template_filter("clean_date")
     def clean_date(dt):
         return dt.strftime("%d.%m, в %H:%M")

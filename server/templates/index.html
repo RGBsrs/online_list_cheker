@@ -5,7 +5,13 @@
 {% block content %}
 <div class="starter-template">
     <h1>Загруженные таблицы</h1>
+    {%if table_names%}
     <p class="lead">Чтоб открыть таблицу кликните на ее имя</p>
+    {%endif%}
+    {%if not table_names%}
+    <p class="lead">Загруженных таблиц нет</p>
+    {%endif%}
+
 </div>
 
 <div class="list-group">
@@ -21,7 +27,9 @@
         <div class="col-md-auto">
             <form form method="POST">
                 <input type="hidden" name="index" value="{{table_name.id}}">
-                <input type="submit" class="btn btn-lg btn-outline-danger" value="X">
+                <button type="submit" class="btn btn-lg btn-outline-danger">
+                    <span aria-hidden="true">&times;</span>
+                </button>
             </form>
         </div>
     </div>
