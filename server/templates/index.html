@@ -15,7 +15,7 @@
             <small id="pubDate" class="form-text text-muted"> Добавлена {{ table_name.date_created|clean_date }}</small>
         </div>
         <div class="col">
-            <a href="{{ url_for('uploaded_file',id = table_name.id) }}"
+            <a href="{{ url_for('views.uploaded_file',id = table_name.id) }}"
                 class="list-group-item list-group-item-action rounded"> {{ table_name.description }} </a>
         </div>
         <div class="col-md-auto">

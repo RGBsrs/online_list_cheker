@@ -1,9 +1,6 @@
-from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import backref
 from datetime import datetime
-from .main import app
-
-db = SQLAlchemy(app)
+from . import db
 
 
 class Table(db.Model):
