@@ -62,14 +62,14 @@ class Ward(db.Model):
         return q_set
 
     
-class User(db.Model):
-    __tablename__ = 'users'
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(250), nullable=False)
-    email = db.Column(db.String(250), nullable=False)
-    password = db.Column(db.String(100), nullable=False)
-    tables = db.relationship('Video', backref='user', lazy=True)
-    wards = db.relationship('Ward', backref='user', lazy=True)
+# class User(db.Model):
+#     __tablename__ = 'users'
+#     id = db.Column(db.Integer, primary_key=True)
+#     name = db.Column(db.String(250), nullable=False)
+#     email = db.Column(db.String(250), nullable=False)
+#     password = db.Column(db.String(100), nullable=False)
+#     tables = db.relationship('Table', backref='user', lazy=True)
+#     wards = db.relationship('Ward', backref='user', lazy=True)
 
     # def get_token(self, expire_time=24):
     #     expire_delta = timedelta(expire_time)
