@@ -1,7 +1,6 @@
 import os
 from datetime import  datetime 
 from flask import Blueprint, flash, request, redirect, url_for, render_template
-from sqlalchemy.orm import query
 from werkzeug.utils import secure_filename
 import uuid
 from .services import read_from_excel, allowed_file
@@ -113,3 +112,6 @@ def create_superuser():
     db.session.commit()
     db.session.close()
     return redirect(url_for('views.show_tables'))
+
+
+

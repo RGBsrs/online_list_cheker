@@ -1,4 +1,6 @@
 from datetime import datetime
+from datetime import timezone
+from sqlalchemy.sql import func
 from enum import unique
 from . import db
 from flask_login import UserMixin
@@ -9,8 +11,10 @@ class Table(db.Model):
     name = db.Column(db.String(100))
     description = db.Column(db.String(100))
     filepath = db.Column(db.String(100))
-    date_created = db.Column(db.DateTime)
-    user_id = db.Column(db.Integer, db.ForeignKey('table.id'))
+    date_created = db.Column(db.DateTime(timezone=True), default = func.now())
+    
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    
     wards = db.relationship(
         'Ward',
         backref = db.backref('Table', lazy = 'joined'),
@@ -36,7 +40,7 @@ class Ward(db.Model):
     ckecked_date = db.Column(db.DateTime)
 
     table_id = db.Column(db.Integer, db.ForeignKey('table.id'))
-    user_id = db.Column(db.Integer, db.ForeignKey('table.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
     def __init__(self, number = None, fullname = None, address = None, checked = False) -> None:
         self.number = number
@@ -65,6 +69,8 @@ class User(db.Model, UserMixin):
     name = db.Column(db.String(250), nullable=False)
     email = db.Column(db.String(250), nullable=False, unique = True)
     password = db.Column(db.String(100), nullable=False)
+    registration_date = db.Column(db.DateTime(timezone=True), default = func.now())
+    is_admin = db.Column(db.Boolean, default = False)
     
     tables = db.relationship(
         'Table',
@@ -76,6 +82,10 @@ class User(db.Model, UserMixin):
         backref = db.backref('User', lazy = 'joined'),
         lazy = 'select')
 
+    def __init__(self, name = None, email = None, password = None) -> None:
+        self.name = name
+        self.email = email
+        self.password = password
 
 
     # def get_token(self, expire_time=24):
