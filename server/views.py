@@ -5,7 +5,7 @@ from sqlalchemy.orm import query
 from werkzeug.utils import secure_filename
 import uuid
 from .services import read_from_excel, allowed_file
-from .models import Ward, Table
+from .models import Ward, Table, User
 from .settings import DevelopmentConfig
 from . import db, logger
 
@@ -89,6 +89,7 @@ def check_record(id, page):
         table_id = request.form['index']
         Ward.query.filter(Ward.id == id).update(dict(checked=True, ckecked_date = datetime.now()))
         db.session.commit() 
+        db.session.close()
         if page == '':
             page = 1
         return redirect(url_for('views.uploaded_file', id = table_id, page = page))
@@ -100,7 +101,15 @@ def delete_table(id):
         Table.query.filter(Table.id == id).delete()
         Ward.query.filter(Ward.table_id == id).delete()
         db.session.commit()
+        db.session.close()
         return redirect(url_for('views.show_tables'))
     return redirect(url_for('views.show_tables'))
 
 
+@views.route('/create_admin', methods=['POST', 'GET'])
+def create_superuser():
+    u = User(name = 'admin', email = 'a@i', password = '12345')
+    db.session.add(u)
+    db.session.commit()
+    db.session.close()
+    return redirect(url_for('views.show_tables'))

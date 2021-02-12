@@ -1,7 +1,7 @@
-from sqlalchemy.orm import backref
 from datetime import datetime
+from enum import unique
 from . import db
-
+from flask_login import UserMixin
 
 class Table(db.Model):
     __tablename__= 'table'
@@ -10,7 +10,7 @@ class Table(db.Model):
     description = db.Column(db.String(100))
     filepath = db.Column(db.String(100))
     date_created = db.Column(db.DateTime)
-
+    user_id = db.Column(db.Integer, db.ForeignKey('table.id'))
     wards = db.relationship(
         'Ward',
         backref = db.backref('Table', lazy = 'joined'),
@@ -36,7 +36,7 @@ class Ward(db.Model):
     ckecked_date = db.Column(db.DateTime)
 
     table_id = db.Column(db.Integer, db.ForeignKey('table.id'))
-
+    user_id = db.Column(db.Integer, db.ForeignKey('table.id'))
 
     def __init__(self, number = None, fullname = None, address = None, checked = False) -> None:
         self.number = number
@@ -59,14 +59,24 @@ class Ward(db.Model):
         return q_set
 
     
-# class User(db.Model):
-#     __tablename__ = 'users'
-#     id = db.Column(db.Integer, primary_key=True)
-#     name = db.Column(db.String(250), nullable=False)
-#     email = db.Column(db.String(250), nullable=False)
-#     password = db.Column(db.String(100), nullable=False)
-#     tables = db.relationship('Table', backref='user', lazy=True)
-#     wards = db.relationship('Ward', backref='user', lazy=True)
+class User(db.Model, UserMixin):
+    __tablename__ = 'users'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(250), nullable=False)
+    email = db.Column(db.String(250), nullable=False, unique = True)
+    password = db.Column(db.String(100), nullable=False)
+    
+    tables = db.relationship(
+        'Table',
+        backref = db.backref('User', lazy = 'joined'),
+        lazy = 'select')
+    
+    wards = db.relationship(
+        'Ward',
+        backref = db.backref('User', lazy = 'joined'),
+        lazy = 'select')
+
+
 
     # def get_token(self, expire_time=24):
     #     expire_delta = timedelta(expire_time)
