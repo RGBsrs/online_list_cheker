@@ -1,7 +1,6 @@
 from datetime import datetime
 from datetime import timezone
 from sqlalchemy.sql import func
-from enum import unique
 from . import db
 from flask_login import UserMixin
 

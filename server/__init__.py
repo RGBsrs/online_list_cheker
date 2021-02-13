@@ -1,5 +1,6 @@
 from os import path
 from flask import Flask
+from flask_login import LoginManager
 import logging
 from flask_sqlalchemy import SQLAlchemy
 from .settings import DevelopmentConfig
@@ -16,6 +17,14 @@ def create_app():
     
     db.init_app(app)
     init_db(app)
+
+    login_manager = LoginManager()
+    login_manager.login_view = 'views.show_tables'
+    login_manager.init_app(app)
+
+    @login_manager.user_loader
+    def load_user(id):
+        return User.query.get(int(id))
 
     from .views import views
     from .auth import auth

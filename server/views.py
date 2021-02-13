@@ -1,6 +1,8 @@
 import os
 from datetime import  datetime 
 from flask import Blueprint, flash, request, redirect, url_for, render_template
+from flask_login.utils import login_required
+from sqlalchemy.sql.functions import current_user, user
 from werkzeug.utils import secure_filename
 import uuid
 from .services import read_from_excel, allowed_file
@@ -15,6 +17,7 @@ upload_path = DevelopmentConfig.UPLOAD_FOLDER
 
 views = Blueprint('views', __name__)
 
+@login_required
 @views.route('/', methods=['GET'])
 def show_tables():
     try:
@@ -24,8 +27,8 @@ def show_tables():
         logger.warning(f'Error when quering all tables: {e}')
     return render_template('index.html')
 
-
 @views.route('/', methods=['POST'])
+@login_required
 def change_tables():  
     try:
         table_id = request.form['index']
@@ -34,8 +37,8 @@ def change_tables():
         logger.warning(f'Error when deliting table: {e}')
     return render_template('index.html')
 
-
 @views.route('/upload', methods=['GET', 'POST'])
+@login_required
 def upload_file():
     if request.method == 'POST':
         if 'file' not in request.files:
@@ -69,8 +72,8 @@ def upload_file():
             return redirect(url_for('views.show_tables'))
     return render_template('upload.html') 
 
-
 @views.route('/table/<id>', methods=['GET'])
+@login_required
 def uploaded_file(id):
     page = request.args.get('page', 1, type=int)
     q_string = request.args.get('query-string')
@@ -81,12 +84,14 @@ def uploaded_file(id):
         wards = Ward.get_by_table_id(id).paginate(page=page, per_page=ROWS_PER_PAGE)
     return render_template('list.html', wards = wards, id = id)
 
-
 @views.route('/check/<id>/<page>', methods=['GET', 'POST'])
+@login_required
 def check_record(id, page):
     if request.method == 'POST':
         table_id = request.form['index']
-        Ward.query.filter(Ward.id == id).update(dict(checked=True, ckecked_date = datetime.now()))
+        user = request.form['user_id']
+        Ward.query.filter(Ward.id == id).update(
+            dict(checked=True, ckecked_date = datetime.now(), user_id =user))
         db.session.commit() 
         db.session.close()
         if page == '':
@@ -95,6 +100,7 @@ def check_record(id, page):
     return redirect(url_for('views.show_tables')) 
 
 @views.route('/delete/<id>', methods=['POST', 'GET'])
+@login_required
 def delete_table(id):
     if request.method == 'GET':
         Table.query.filter(Table.id == id).delete()
@@ -105,13 +111,6 @@ def delete_table(id):
     return redirect(url_for('views.show_tables'))
 
 
-@views.route('/create_admin', methods=['POST', 'GET'])
-def create_superuser():
-    u = User(name = 'admin', email = 'a@i', password = '12345')
-    db.session.add(u)
-    db.session.commit()
-    db.session.close()
-    return redirect(url_for('views.show_tables'))
 
 
 

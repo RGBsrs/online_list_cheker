@@ -8,10 +8,10 @@
     <meta name="author" content="Mark Otto, Jacob Thornton, and Bootstrap contributors">
     <meta name="generator" content="Jekyll v4.1.1">
     <title>{% block title %}
-    {% endblock title %}</title>
+        {% endblock title %}</title>
 
     <link rel="canonical" href="https://getbootstrap.com/docs/4.5/examples/starter-template/">
-    <link href="{{ url_for('static', filename='favicon.ico') }}" rel="icon" type="image/x-icon" />    
+    <link href="{{ url_for('static', filename='favicon.ico') }}" rel="icon" type="image/x-icon" />
     <!-- Bootstrap core CSS -->
     <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
 
@@ -48,9 +48,16 @@
                 <li class="nav-item active">
                     <a class="nav-link" href="/upload">Загрузить файл <span class="sr-only">(current)</span></a>
                 </li>
+                {%if not current_user.is_authenticated %}
                 <li class="nav-item active">
                     <a class="nav-link" href="/sign-up">Регистрация</a>
                 </li>
+                {%endif%}
+                {%if current_user.is_authenticated %}
+                <li class="nav-item active">
+                    <a class="nav-link" href="#">Профиль</a>
+                </li>
+                {%endif%}
                 <!--<li class="nav-item">
                     <a class="nav-link" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
                 </li>
@@ -64,21 +71,52 @@
                     </div>
                 </li>-->
             </ul>
-            <form class="form-inline my-2 my-lg-0">
-                <input class="form-control mr-sm-2" type="text" placeholder="Логин">
-                <input class="form-control mr-sm-2" type="password" placeholder="Пароль">
+            {%if not current_user.is_authenticated %}
+            <form class="form-inline my-2 my-lg-0" action="/login" method="POST"> 
+                <input class="form-control mr-sm-2" type="email" name="email" placeholder="Имя">
+                <input class="form-control mr-sm-2" type="password" name='password' placeholder="Пароль">
                 <button class="btn btn-secondary my-2 my-sm-0" type="submit">Войти</button>
             </form>
+            {% endif%}
+            {%if current_user.is_authenticated %}
+            <span class="navbar-text mx-3">
+                {{current_user.name}}
+            </span>
+            <form class="d-flex" action='/logout'>
+                <button class="btn btn-secondary my-2 my-sm-0" type="submit">Выйти</button>
+            </form>
+            {% endif%}
         </div>
     </nav>
 
     <main role="main" class="container">
-    {% block content%}
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        {% if category == 'error' %}
+        <div class="alert alert-danger alter-dismissable fade show" role="alert">
+            {{ message }}
+            <button type="button" class="close" data-dismiss="alert">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        {% else %}
+        <div class="alert alert-success alter-dismissable fade show" role="alert">
+            {{ message }}
+            <button type="button" class="close" data-dismiss="alert">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        {% endif %}
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+        {% block content%}
 
-    {% endblock %}
+        {% endblock %}
     </main><!-- /.container -->
-    
-    
+
+
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
         integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous">
     </script>
