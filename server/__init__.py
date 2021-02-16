@@ -28,9 +28,11 @@ def create_app():
 
     from .views import views
     from .auth import auth
+    from .profile import profile
 
     app.register_blueprint(views, url_prefix='/')
     app.register_blueprint(auth, url_prefix='/')
+    app.register_blueprint(profile, url_prefix='/')
 
     @app.teardown_appcontext
     def shutdown_session(exception=None):
@@ -41,7 +43,7 @@ def create_app():
         return dt.strftime("%d.%m, в %H:%M")
 
     @app.cli.command("restart_db")
-    def drop_db():
+    def restart_db():
         db.drop_all()
         db.create_all()
         print("DB cleared and created")

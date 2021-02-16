@@ -19,11 +19,12 @@ class Table(db.Model):
         backref = db.backref('Table', lazy = 'joined'),
         lazy = 'select')
 
-    def __init__(self, name = None, description= 'default', filepath = None) -> None:
+    def __init__(self, name = None, description= 'default', filepath = None, user_id = None ) -> None:
         self.name = name
         self.description = description
         self.filepath = filepath
         self.date_created = datetime.now()
+        self.user_id = user_id
 
     def __repr__(self) -> str:
         return f"Таблиця: {self.name}"
@@ -85,6 +86,10 @@ class User(db.Model, UserMixin):
         self.name = name
         self.email = email
         self.password = password
+    
+    @classmethod
+    def get_user(cls, id: int):
+        return cls.query.filter(cls.id == id).first()
 
 
     # def get_token(self, expire_time=24):
