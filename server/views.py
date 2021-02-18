@@ -2,7 +2,7 @@ import os
 from datetime import  datetime 
 from flask import Blueprint, flash, request, redirect, url_for, render_template
 from flask_login.utils import login_required
-from sqlalchemy.sql.functions import current_user
+from flask_login import current_user
 from werkzeug.utils import secure_filename
 import uuid
 from .services import read_from_excel, allowed_file
@@ -61,9 +61,9 @@ def upload_file():
                 description = request.form['description']
             else:
                 description = 'default description'
-            user_id = request.form.get('user_id')
+            #user_id = request.form.get('user_id')
             t = Table(name = filename, filepath = os.path.join(upload_path, filename), 
-            description = description, user_id = user_id)
+            description = description, user_id = current_user.id)
             for record in table_data:
                 w = Ward(record[0], record[1],record[2]) 
                 t.wards.append(w)

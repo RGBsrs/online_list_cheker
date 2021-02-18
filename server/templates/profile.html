@@ -7,5 +7,8 @@
 <p>{{user.name}}</p>
 <p>{{user.email}}</p>
 <p>{{user.password}}</p>
-<p>{{user.tables}}</p>
+</br>
+{%for table in user.tables%}
+<p>{{table}}</p>
+{% endfor %}
 {% endblock content %}
