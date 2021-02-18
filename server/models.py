@@ -9,7 +9,7 @@ class Table(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100))
     description = db.Column(db.String(100))
-    filepath = db.Column(db.String(100))
+    filepath = db.Column(db.String(200))
     date_created = db.Column(db.DateTime(timezone=True), default = func.now())
     
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
@@ -59,7 +59,7 @@ class Ward(db.Model):
 
     @classmethod
     def get_by_table_id(cls, id: int):
-        q_set = cls.query.filter(cls.table_id == id)
+        q_set = cls.query.filter(cls.table_id == id).order_by(cls.id)
         return q_set
 
     

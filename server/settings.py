@@ -22,7 +22,7 @@ class DevelopmentConfig(Config):
     UPLOAD_FOLDER = os.path.join(BASEDIR,'uploads')
     IMAGE_UPLOADS = "/home/username/projects/my_app/app/static/images/uploads"
 
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(BASEDIR, 'db.sqlite')
+    SQLALCHEMY_DATABASE_URI = 'postgresql://postgres:Ghjws733@localhost/online-checker'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     SESSION_COOKIE_SECURE = False
