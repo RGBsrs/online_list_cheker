@@ -104,8 +104,8 @@ def check_record(id, page):
 @login_required
 def delete_table(id):
     if request.method == 'GET':
-        Table.query.filter(Table.id == id).delete()
         Ward.query.filter(Ward.table_id == id).delete()
+        Table.query.filter(Table.id == id).delete()
         db.session.commit()
         db.session.close()
         return redirect(url_for('views.show_tables'))

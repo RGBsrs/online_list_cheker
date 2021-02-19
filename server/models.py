@@ -17,7 +17,8 @@ class Table(db.Model):
     wards = db.relationship(
         'Ward',
         backref = db.backref('Table', lazy = 'joined'),
-        lazy = 'select')
+        lazy = 'select',
+        cascade="all, delete-orphan")
 
     def __init__(self, name = None, description= 'default', filepath = None, user_id = None ) -> None:
         self.name = name

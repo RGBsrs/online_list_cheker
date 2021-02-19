@@ -16,7 +16,7 @@ def create_app():
     from .models import Table, Ward, User
     
     db.init_app(app)
-    init_db(app)
+    #init_db(app)
 
     login_manager = LoginManager()
     login_manager.login_view = 'views.show_tables'
