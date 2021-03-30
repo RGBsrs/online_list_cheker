@@ -93,9 +93,13 @@ def check_record(id, page):
     if request.method == 'POST':
         table_id = request.form['index']
         user = request.form['user_id']
-        Ward.query.filter(Ward.id == id).update(
-            dict(checked=True, ckecked_date = datetime.now(), user_id =user))
-        db.session.commit() 
+        try:
+            Ward.query.filter(Ward.id == id).update(
+                dict(checked=True, ckecked_date = datetime.now(), user_id =user))
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            logger.warning(f'Error when checking ward:{id} :\n {e}') 
         w = Ward.query.filter(Ward.id == id).first()
         db.session.close()
         flash(f'{w.fullname} cheked','succsess')
@@ -108,9 +112,13 @@ def check_record(id, page):
 @login_required
 def delete_table(id):
     if request.method == 'GET':
-        Ward.query.filter(Ward.table_id == id).delete()
-        Table.query.filter(Table.id == id).delete()
-        db.session.commit()
+        try:    
+            Ward.query.filter(Ward.table_id == id).delete()
+            Table.query.filter(Table.id == id).delete()
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            logger.warning(f'Errod whed deliting table:{id} \n {e}')
         return redirect(url_for('views.show_tables'))
     return redirect(url_for('views.show_tables'))
 
