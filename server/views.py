@@ -61,16 +61,18 @@ def upload_file():
                 description = request.form['description']
             else:
                 description = 'default description'
-            #user_id = request.form.get('user_id')
-            t = Table(name = filename, filepath = os.path.join(upload_path, filename), 
-            description = description, user_id = current_user.id)
-            for record in table_data:
-                w = Ward(record[0], record[1],record[2]) 
-                t.wards.append(w)
-            db.session.add(t)    
-            db.session.commit()
-            db.session.close()
-            return redirect(url_for('views.show_tables'))
+            try:
+                t = Table(name = filename, filepath = os.path.join(upload_path, filename), 
+                description = description, user_id = current_user.id)
+                for record in table_data:
+                    w = Ward(record[0], record[1],record[2]) 
+                    t.wards.append(w)
+                db.session.add(t)    
+                db.session.commit()
+                return redirect(url_for('views.show_tables'))
+            except Exception as e:
+                db.session.rollback()
+                logger.warning(f'Error when adding table or wards: {e}')
     return render_template('upload.html') 
 
 @views.route('/table/<id>', methods=['GET'])
@@ -94,7 +96,9 @@ def check_record(id, page):
         Ward.query.filter(Ward.id == id).update(
             dict(checked=True, ckecked_date = datetime.now(), user_id =user))
         db.session.commit() 
+        w = Ward.query.filter(Ward.id == id).first()
         db.session.close()
+        flash(f'{w.fullname} cheked','succsess')
         if page == '':
             page = 1
         return redirect(url_for('views.uploaded_file', id = table_id, page = page))
@@ -107,7 +111,6 @@ def delete_table(id):
         Ward.query.filter(Ward.table_id == id).delete()
         Table.query.filter(Table.id == id).delete()
         db.session.commit()
-        db.session.close()
         return redirect(url_for('views.show_tables'))
     return redirect(url_for('views.show_tables'))
 
