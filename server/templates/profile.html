@@ -11,4 +11,25 @@
 {%for table in user.tables%}
 <p>{{table}}</p>
 {% endfor %}
+</br>
+<div class="card-header">
+    <a class="collapsed card-link" data-toggle="collapse" href="#collapseThree">
+        Отмеченные люди
+    </a>
+</div>
+<div id="collapseThree" class="collapse" data-parent="#accordion">
+<div class="card card-body">
+    <ul class="list-group">
+        {%for ward in user.wards%}
+        <li class="list-group-item">{{ward.fullname}}</li>
+        {% endfor %}
+    </ul>
+</div>
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js"></script>
+
+
 {% endblock content %}
