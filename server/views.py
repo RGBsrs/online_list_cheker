@@ -1,12 +1,14 @@
 import os
+
 from datetime import datetime
 from flask import Blueprint, flash, request, redirect, url_for, render_template
 from flask_login.utils import login_required
 from flask_login import current_user
 from werkzeug.utils import secure_filename
 import uuid
-from .services import read_from_excel, allowed_file
+from .services.file_service import read_from_excel, allowed_file
 from .models import Ward, Table, User
+from .services.table_service import TableService
 from .settings import DevelopmentConfig
 from . import db, logger
 
@@ -18,11 +20,11 @@ upload_path = DevelopmentConfig.UPLOAD_FOLDER
 views = Blueprint("views", __name__)
 
 
-@login_required
 @views.route("/", methods=["GET"])
+#@login_required
 def show_tables():
     try:
-        table_names = db.session.query(Table).all()
+        table_names = TableService.fetch_all_tables(db.session).all()
         return render_template("index.html", table_names=table_names)
     except Exception as e:
         logger.warning(f"Error when quering all tables: {e}")
